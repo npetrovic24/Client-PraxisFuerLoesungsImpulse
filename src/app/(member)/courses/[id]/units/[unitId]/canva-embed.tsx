@@ -71,7 +71,7 @@ export function CanvaEmbed({ blockId, title }: CanvaEmbedProps) {
             loading="lazy"
             allowFullScreen
             allow="fullscreen"
-            title={title || "Canva Präsentation"}
+            title={title || "Präsentation"}
             onLoad={() => setIframeLoaded(true)}
           />
         )}
