@@ -41,7 +41,7 @@ export default async function AdminDashboardPage() {
 
   const stats = [
     {
-      label: "Teilnehmer",
+      label: "Benutzer",
       value: membersCount ?? 0,
       sub: `${activeMembersCount ?? 0} aktiv`,
       icon: Users,
@@ -103,7 +103,7 @@ export default async function AdminDashboardPage() {
         <div className="mt-8">
           <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            Letzte Teilnehmer
+            Letzte Benutzer
           </h2>
           <Card>
             <CardContent className="p-0">

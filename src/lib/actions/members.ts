@@ -52,10 +52,12 @@ export async function createMember(formData: {
   email: string;
   password: string;
   fullName: string;
+  role?: "admin" | "dozent" | "participant";
   courseAssignments?: { courseId: string; expiresAt?: string | null }[];
 }) {
   await requireAdmin();
   const admin = createAdminClient();
+  const role = formData.role || "participant";
 
   const { data, error } = await admin.auth.admin.createUser({
     email: formData.email,
@@ -63,7 +65,7 @@ export async function createMember(formData: {
     email_confirm: true,
     user_metadata: {
       full_name: formData.fullName,
-      role: "participant",
+      role,
     },
   });
 
@@ -94,19 +96,24 @@ export async function createMember(formData: {
 
 export async function updateMember(
   memberId: string,
-  formData: { fullName: string; email: string }
+  formData: { fullName: string; email: string; role?: "admin" | "dozent" | "participant" }
 ) {
   await requireAdmin();
   const supabase = await createClient();
   const admin = createAdminClient();
 
   // Update profile
+  const profileUpdate: Record<string, string> = {
+    full_name: formData.fullName,
+    email: formData.email,
+  };
+  if (formData.role) {
+    profileUpdate.role = formData.role;
+  }
+
   const { error: profileError } = await supabase
     .from("profiles")
-    .update({
-      full_name: formData.fullName,
-      email: formData.email,
-    })
+    .update(profileUpdate)
     .eq("id", memberId);
 
   if (profileError) return { error: profileError.message };

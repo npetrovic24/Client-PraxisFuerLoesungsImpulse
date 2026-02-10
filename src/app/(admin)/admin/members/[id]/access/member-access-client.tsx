@@ -316,7 +316,7 @@ export function MemberAccessClient({
         <Button variant="ghost" size="sm" className="mb-2" asChild>
           <Link href="/admin/members">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Zurück zu Teilnehmer
+            Zurück zu Benutzer
           </Link>
         </Button>
         <h1 className="text-2xl font-semibold">

@@ -172,7 +172,7 @@ export async function getUserAccessData(
 export async function getAccessibleCourses(userId: string) {
   const data = await getUserAccessData(userId);
 
-  if (data.role === "admin") return data.courses;
+  if (data.role === "admin" || data.role === "dozent") return data.courses;
 
   return data.courses.filter((course) =>
     hasCourseAccess(data.grants, course, data.units)
@@ -193,7 +193,7 @@ export async function getAccessibleCoursesWithCounts(
   userId: string
 ): Promise<CourseWithCounts[]> {
   const data = await getUserAccessData(userId);
-  const isAdmin = data.role === "admin";
+  const isAdmin = data.role === "admin" || data.role === "dozent";
 
   return data.courses
     .filter((course) => {
@@ -223,7 +223,7 @@ export async function getAccessibleCoursesWithCounts(
  */
 export async function getCourseWithAccess(userId: string, courseId: string) {
   const data = await getUserAccessData(userId);
-  const isAdmin = data.role === "admin";
+  const isAdmin = data.role === "admin" || data.role === "dozent";
 
   const course = data.courses.find((c) => c.id === courseId);
   if (!course) return null;
@@ -256,7 +256,7 @@ export async function getCourseWithAccess(userId: string, courseId: string) {
 export async function getUnitContent(userId: string, courseId: string, unitId: string) {
   const supabase = await createClient();
   const data = await getUserAccessData(userId);
-  const isAdmin = data.role === "admin";
+  const isAdmin = data.role === "admin" || data.role === "dozent";
 
   const course = data.courses.find((c) => c.id === courseId);
   if (!course) return null;

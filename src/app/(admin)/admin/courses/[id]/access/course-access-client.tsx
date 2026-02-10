@@ -156,8 +156,8 @@ export function CourseAccessClient({
       );
       toast.success(
         isGranted
-          ? "Alle Teilnehmer freigeschaltet."
-          : "Alle Teilnehmer gesperrt."
+          ? "Alle Benutzer freigeschaltet."
+          : "Alle Benutzer gesperrt."
       );
     }
 
@@ -179,7 +179,7 @@ export function CourseAccessClient({
               Zugriffe: {course.name}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {grantedCount} von {members.length} Teilnehmern freigeschaltet
+              {grantedCount} von {members.length} Benutzern freigeschaltet
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -218,7 +218,7 @@ export function CourseAccessClient({
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Users className="mb-4 h-12 w-12 text-muted-foreground/50" />
             <p className="text-lg font-medium text-muted-foreground">
-              Noch keine Teilnehmer
+              Noch keine Benutzer
             </p>
           </CardContent>
         </Card>

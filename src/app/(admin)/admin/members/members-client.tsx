@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import type { Profile } from "@/lib/types";
+import type { Profile, UserRole } from "@/lib/types";
 import {
   createMember,
   updateMember,
@@ -22,6 +22,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -80,11 +87,13 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [newRole, setNewRole] = useState<UserRole>("participant");
   const [courseAssignments, setCourseAssignments] = useState<CourseAssignment[]>([]);
 
   // Edit form state
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
+  const [editRole, setEditRole] = useState<UserRole>("participant");
 
   // Reset form state
   const [newResetPassword, setNewResetPassword] = useState("");
@@ -99,8 +108,8 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
     );
   }, [members, search]);
 
-  const activeCount = members.filter((m) => m.is_active && m.role !== "admin").length;
-  const participantCount = members.filter((m) => m.role !== "admin").length;
+  const activeCount = members.filter((m) => m.is_active).length;
+  const totalCount = members.length;
 
   function toggleCourseAssignment(courseId: string) {
     setCourseAssignments((prev) => {
@@ -137,7 +146,8 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
       email: newEmail,
       password: newPassword,
       fullName: newName,
-      courseAssignments: courseAssignments.length > 0 ? courseAssignments : undefined,
+      role: newRole,
+      courseAssignments: newRole === "participant" && courseAssignments.length > 0 ? courseAssignments : undefined,
     });
     setLoading(false);
 
@@ -146,14 +156,15 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
       return;
     }
 
-    toast.success(`Teilnehmer "${newName}" wurde angelegt.`);
+    const roleLabel = newRole === "admin" ? "Admin" : newRole === "dozent" ? "Dozent/in" : "Benutzer";
+    toast.success(`${roleLabel} "${newName}" wurde angelegt.`);
     if (result.data) {
       setMembers((prev) => [
         {
           id: result.data.id,
           email: newEmail,
           full_name: newName,
-          role: "participant",
+          role: newRole,
           is_active: true,
           created_at: new Date().toISOString(),
         },
@@ -164,6 +175,7 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
     setNewName("");
     setNewEmail("");
     setNewPassword("");
+    setNewRole("participant");
     setCourseAssignments([]);
   }
 
@@ -177,6 +189,7 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
     const result = await updateMember(editMember.id, {
       fullName: editName,
       email: editEmail,
+      role: editRole,
     });
     setLoading(false);
 
@@ -185,11 +198,11 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
       return;
     }
 
-    toast.success(`Teilnehmer "${editName}" wurde aktualisiert.`);
+    toast.success(`"${editName}" wurde aktualisiert.`);
     setMembers((prev) =>
       prev.map((m) =>
         m.id === editMember.id
-          ? { ...m, full_name: editName, email: editEmail }
+          ? { ...m, full_name: editName, email: editEmail, role: editRole }
           : m
       )
     );
@@ -253,6 +266,7 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
     setEditMember(member);
     setEditName(member.full_name);
     setEditEmail(member.email);
+    setEditRole(member.role);
     setEditOpen(true);
   }
 
@@ -260,26 +274,39 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Teilnehmer</h1>
+          <h1 className="text-2xl font-semibold">Benutzer</h1>
           <p className="text-sm text-muted-foreground">
-            {participantCount} Teilnehmer total, {activeCount} aktiv
+            {totalCount} Benutzer total, {activeCount} aktiv
           </p>
         </div>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <UserPlus className="mr-2 h-4 w-4" />
-              Neuer Teilnehmer
+              Neue/r Benutzer/in
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Neuen Teilnehmer anlegen</DialogTitle>
+              <DialogTitle>Neue/n Benutzer/in anlegen</DialogTitle>
               <DialogDescription>
-                Erstelle einen neuen Teilnehmer mit E-Mail und Passwort.
+                Erstelle eine/n neue/n Benutzer/in mit E-Mail und Passwort.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="role">Rolle</Label>
+                <Select value={newRole} onValueChange={(v) => setNewRole(v as UserRole)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="participant">Teilnehmer</SelectItem>
+                    <SelectItem value="dozent">Dozent/in</SelectItem>
+                    <SelectItem value="admin">Administrator</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="name">Name *</Label>
                 <Input
@@ -310,8 +337,8 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
                 />
               </div>
 
-              {/* Course assignments */}
-              {courses.length > 0 && (
+              {/* Course assignments (only for participants) */}
+              {newRole === "participant" && courses.length > 0 && (
                 <div className="grid gap-2">
                   <Label>Kurse zuweisen (optional)</Label>
                   <div className="space-y-2 rounded-md border p-3 max-h-60 overflow-y-auto">
@@ -442,7 +469,7 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
             {filteredMembers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  {search ? "Keine Teilnehmer gefunden." : "Noch keine Teilnehmer vorhanden."}
+                  {search ? "Keine Benutzer gefunden." : "Noch keine Benutzer vorhanden."}
                 </TableCell>
               </TableRow>
             ) : (
@@ -456,22 +483,24 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
                   </TableCell>
                   <TableCell>{member.email}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={member.role === "admin" ? "default" : "secondary"}
-                    >
-                      {member.role === "admin" ? (
-                        <><Shield className="mr-1 h-3 w-3" />Admin</>
-                      ) : (
-                        "Teilnehmer"
-                      )}
-                    </Badge>
+                    {member.role === "admin" ? (
+                      <Badge variant="default">
+                        <Shield className="mr-1 h-3 w-3" />Admin
+                      </Badge>
+                    ) : member.role === "dozent" ? (
+                      <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                        Dozent/in
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">Teilnehmer</Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Switch
                         checked={member.is_active}
                         onCheckedChange={() => handleToggle(member)}
-                        disabled={member.role === "admin"}
+                        disabled={member.role === "admin" || member.role === "dozent"}
                       />
                       <span className="text-sm">
                         {member.is_active ? (
@@ -487,37 +516,35 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      {member.role !== "admin" && (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditDialog(member)}
-                            title="Bearbeiten"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEditDialog(member)}
+                        title="Bearbeiten"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openResetDialog(member)}
+                        title="Passwort zurücksetzen"
+                      >
+                        <KeyRound className="h-4 w-4" />
+                      </Button>
+                      {member.role === "participant" && (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link
+                            href={`/admin/members/${member.id}/access`}
                           >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openResetDialog(member)}
-                            title="Passwort zurücksetzen"
-                          >
-                            <KeyRound className="h-4 w-4" />
-                          </Button>
-                          <Button variant="outline" size="sm" asChild>
-                            <Link
-                              href={`/admin/members/${member.id}/access`}
-                            >
-                              {member.is_active ? (
-                                <Shield className="mr-1.5 h-3.5 w-3.5" />
-                              ) : (
-                                <ShieldOff className="mr-1.5 h-3.5 w-3.5" />
-                              )}
-                              Zugriff
-                            </Link>
-                          </Button>
-                        </>
+                            {member.is_active ? (
+                              <Shield className="mr-1.5 h-3.5 w-3.5" />
+                            ) : (
+                              <ShieldOff className="mr-1.5 h-3.5 w-3.5" />
+                            )}
+                            Zugriff
+                          </Link>
+                        </Button>
                       )}
                     </div>
                   </TableCell>
@@ -565,12 +592,25 @@ export function MembersClient({ initialMembers, courses }: MembersClientProps) {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Teilnehmer bearbeiten</DialogTitle>
+            <DialogTitle>Benutzer bearbeiten</DialogTitle>
             <DialogDescription>
-              Name und E-Mail von {editMember?.full_name} ändern.
+              Daten von {editMember?.full_name} ändern.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-role">Rolle</Label>
+              <Select value={editRole} onValueChange={(v) => setEditRole(v as UserRole)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="participant">Teilnehmer</SelectItem>
+                  <SelectItem value="dozent">Dozent/in</SelectItem>
+                  <SelectItem value="admin">Administrator</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-name">Name</Label>
               <Input

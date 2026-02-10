@@ -188,7 +188,7 @@ export async function setCourseAccessForAll(
     .select("id")
     .eq("role", "participant");
 
-  if (!members) return { error: "Keine Teilnehmer gefunden" };
+  if (!members) return { error: "Keine Benutzer gefunden" };
 
   for (const member of members) {
     await setAccessGrant({
