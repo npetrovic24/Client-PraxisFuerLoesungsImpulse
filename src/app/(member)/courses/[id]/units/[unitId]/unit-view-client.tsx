@@ -69,7 +69,7 @@ function ContentBlockRenderer({ block }: { block: ContentBlock }) {
             </div>
             <Button asChild size="sm">
               <a
-                href={content.publicUrl as string}
+                href={(content.publicUrl as string) || (content.url as string)}
                 download
                 target="_blank"
                 rel="noopener noreferrer"
@@ -153,18 +153,23 @@ export function UnitViewClient({
         </nav>
 
         {/* Unit title */}
-        <h1 className="text-xl font-semibold mb-8 lg:text-2xl">{unit.name}</h1>
+        <div className="mb-10">
+          <h1 className="text-2xl font-bold tracking-tight lg:text-3xl text-foreground">
+            {unit.name}
+          </h1>
+          <div className="mt-2 h-1 w-12 rounded-full bg-primary/60" />
+        </div>
 
         {/* Content blocks */}
         {blocks.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border p-12 text-center">
-            <FileText className="mx-auto mb-3 h-8 w-8 text-muted-foreground/40" />
-            <p className="text-muted-foreground">
+          <div className="rounded-xl border border-dashed border-border/50 p-16 text-center bg-muted/20">
+            <FileText className="mx-auto mb-4 h-10 w-10 text-muted-foreground/30" />
+            <p className="text-muted-foreground text-sm">
               Dieser Tag hat noch keine Inhalte.
             </p>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-10">
             {blocks.map((block) => (
               <ContentBlockRenderer key={block.id} block={block} />
             ))}

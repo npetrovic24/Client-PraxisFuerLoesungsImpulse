@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Maximize2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface CanvaEmbedProps {
@@ -9,7 +9,7 @@ interface CanvaEmbedProps {
   title?: string;
 }
 
-export function CanvaEmbed({ blockId, title }: CanvaEmbedProps) {
+export function CanvaEmbed({ blockId }: CanvaEmbedProps) {
   const [embedUrl, setEmbedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,7 +39,7 @@ export function CanvaEmbed({ blockId, title }: CanvaEmbedProps) {
         <CardContent className="flex items-center gap-3 p-4">
           <AlertTriangle className="h-5 w-5 text-destructive" />
           <span className="text-sm text-muted-foreground">
-            {error || "Embed konnte nicht geladen werden."}
+            {error || "Inhalt konnte nicht geladen werden."}
           </span>
         </CardContent>
       </Card>
@@ -47,35 +47,32 @@ export function CanvaEmbed({ blockId, title }: CanvaEmbedProps) {
   }
 
   return (
-    <div className="space-y-2">
-      {title && (
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
+    <div className="relative w-full overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-muted/30 to-muted/10 shadow-sm">
+      {/* Skeleton while loading */}
+      {(loading || !iframeLoaded) && (
+        <div
+          className="flex flex-col items-center justify-center gap-4"
+          style={{ minHeight: "75vh" }}
+        >
+          <div className="h-10 w-10 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+          <p className="text-sm text-muted-foreground/70">Wird geladen...</p>
+        </div>
       )}
-      <div
-        className="relative w-full overflow-hidden rounded-lg border border-border bg-muted"
-        style={{ minHeight: "70vh" }}
-      >
-        {/* Skeleton while loading */}
-        {(loading || !iframeLoaded) && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-            <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-            <p className="text-sm text-muted-foreground">Wird geladen...</p>
-          </div>
-        )}
-        {embedUrl && (
+      {embedUrl && (
+        <div style={{ minHeight: "75vh" }} className="relative">
           <iframe
             src={embedUrl}
-            className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${
+            className={`absolute inset-0 h-full w-full transition-opacity duration-500 ${
               iframeLoaded ? "opacity-100" : "opacity-0"
             }`}
             loading="lazy"
             allowFullScreen
             allow="fullscreen"
-            title={title || "Präsentation"}
+            title="Präsentation"
             onLoad={() => setIframeLoaded(true)}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
